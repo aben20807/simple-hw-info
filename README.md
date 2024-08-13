@@ -1,6 +1,8 @@
 # simple-hw-info
 
-A lightweight tool designed to retrieve basic hardware information for both Windows and Linux systems. Note: This package has not been extensively tested across all environments.
+A lightweight tool designed to retrieve basic hardware information for both Windows and Linux systems. Some information is retrieved using [fastfetch](https://github.com/fastfetch-cli/fastfetch), so you need to install it first.
+
+Note: This package has not been extensively tested across all environments.
 
 ## Windows (powershell)
 
