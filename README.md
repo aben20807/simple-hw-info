@@ -18,14 +18,18 @@ Download `simple-hw-info.exe` from the [release page](https://github.com/aben208
 
 ### Dependencies
 
-```bash
-$ wget https://github.com/fastfetch-cli/fastfetch/releases/download/2.21.1/fastfetch-linux-amd64.deb # >= Ubuntu 20.04
-$ sudo dpkg -i fastfetch-linux-amd64.deb # to recover: sudo apt-get remove fastfetch
-```
++ `>= Ubuntu 20.04`
 
-```bash
-$ sudo apt install screenfetch # < Ubuntu 20.04
-```
+    ```bash
+    $ wget https://github.com/fastfetch-cli/fastfetch/releases/download/2.21.1/fastfetch-linux-amd64.deb
+    $ sudo dpkg -i fastfetch-linux-amd64.deb # to recover: sudo apt-get remove fastfetch
+    ```
+
++ `< Ubuntu 20.04`
+
+    ```bash
+    $ sudo apt install screenfetch
+    ```
 
 ### Usage
 
