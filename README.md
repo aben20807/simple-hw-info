@@ -2,19 +2,19 @@
 
 A lightweight tool designed to retrieve basic hardware information for both Windows and Linux systems. Note: This package has not been extensively tested across all environments.
 
-## Windows
+## Windows (powershell)
 
 ### Dependencies
 
 ```powershell
-$ winget install fastfetch # to recover: winget uninstall fastfetch
+PS> winget install fastfetch # to recover: winget uninstall fastfetch
 ```
 
 ### Usage
 
-Download `simple-hw-info.exe` from the [release page](https://github.com/aben20807/simple-hw-info/releases) and double click it.
+Download `simple-hw-info.exe` from the [release page](https://github.com/aben20807/simple-hw-info/releases) and double-click it.
 
-## Linux
+## Linux (bash)
 
 ### Dependencies
 
@@ -36,7 +36,7 @@ $ curl -s https://raw.githubusercontent.com/aben20807/simple-hw-info/master/simp
 ## Build the binary on Windows
 
 ```powershell
-$ pyinstaller -F -c --clean --exclude-module black,conda --icon=simple-hw-info.ico .\simple-hw-info\simple-hw-info.py
+PS> pyinstaller -F -c --clean --exclude-module black,conda --icon=simple-hw-info.ico .\simple-hw-info\simple-hw-info.py
 ```
 
 ## Icon credit
