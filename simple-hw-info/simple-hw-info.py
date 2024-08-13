@@ -132,13 +132,13 @@ def main():
             ).group(1)
             Capacity = round(
                 int(re.search(r"\s*?Capacity.*?=\s*(.*?)\s*\r", dimm).group(1))
-                / 1000_000_000
+                / (1024**3)
             )
             memeorys.append(
                 {"SMBIOSMemoryType": hex(int(SMBIOSMemoryType)), "Capacity": Capacity}
             )
             memory += str(Capacity) + "+"
-        memory = memory[:-1] + "GB"
+        memory = memory[:-1] + "G"
 
         memory_type = memeorys[0]["SMBIOSMemoryType"]
         # https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.4.0a.pdf - 7.18.2 Memory Device — Type
@@ -256,7 +256,7 @@ def main():
             memeorys.append({"Type": Type, "Size": int(Size)})
             memory += Size + "+"
         # print(memeorys)
-        memory = memory[:-1] + "GB"
+        memory = memory[:-1] + "G"
         memory_type = " (" + memeorys[0]["Type"] + ")"
 
         # disk
