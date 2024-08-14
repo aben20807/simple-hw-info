@@ -105,19 +105,39 @@ def main():
         print("cpu, cores&threads, gpu, memory, ssd, hdd")
         # CPU
         rc, out, err = Cmd("""fastfetch -s cpu --format json""")
-        cpu = json.loads(out)[0]["result"]["cpu"]
+        try:
+            cpu = json.loads(out)[0]["result"]["cpu"]
+        except:
+            print(f"[ERROR] fastfetch error for CPU")
+            cpu = "fastfetch error"
 
         # CPU detail
         rc, out, err = Cmd("""wmic cpu get NumberOfCores,ThreadCount /format:list""")
-        cpu_core_cnt = re.search(r"NumberOfCores=(.*?)\r", out).group(1)
-        cpu_thread_cnt = re.search(r"ThreadCount=(.*?)\r", out).group(1)
+        try:
+            cpu_core_cnt = re.search(r"NumberOfCores=(.*?)\r", out).group(1)
+        except:
+            print(f"[ERROR] cannot get NumberOfCores")
+            cpu_core_cnt = 0
+        try:
+            cpu_thread_cnt = re.search(r"ThreadCount=(.*?)\r", out).group(1)
+        except:
+            print(f"[ERROR] cannot get ThreadCount")
+            cpu_thread_cnt = 0
 
         # GPU
         rc, out, err = Cmd("""fastfetch -s gpu --format json""")
-        gpus = json.loads(out)[0]["result"]
+        try:
+            gpus = json.loads(out)[0]["result"]
+        except:
+            print(f"[ERROR] cannot get gpus from fastfetch")
+            gpus = []
         gpu = ""
         for gpu_i in gpus:
-            gpu += gpu_i["name"] + "+"
+            try:
+                gpu += gpu_i["name"] + "+"
+            except:
+                print(f"[ERROR] gpu no name")
+                gpu += "gpu no name"
         gpu = gpu[:-1]
 
         # Memory detail
@@ -128,13 +148,21 @@ def main():
         memory = ""
         memeorys = []
         for dimm in out:
-            SMBIOSMemoryType = re.search(
-                r"\s*?SMBIOSMemoryType.*?=\s*(.*)\s*", dimm
-            ).group(1)
-            Capacity = round(
-                int(re.search(r"\s*?Capacity.*?=\s*(.*?)\s*\r", dimm).group(1))
-                / (1024**3)
-            )
+            try:
+                SMBIOSMemoryType = re.search(
+                    r"\s*?SMBIOSMemoryType.*?=\s*(.*)\s*", dimm
+                ).group(1)
+            except:
+                print(f"[ERROR] cannot get memory SMBIOSMemoryType")
+                SMBIOSMemoryType = 0
+            try:
+                Capacity = round(
+                    int(re.search(r"\s*?Capacity.*?=\s*(.*?)\s*\r", dimm).group(1))
+                    / (1024**3)
+                )
+            except:
+                print(f"[ERROR] cannot get memory Capacity")
+                Capacity = -1
             memeorys.append(
                 {"SMBIOSMemoryType": hex(int(SMBIOSMemoryType)), "Capacity": Capacity}
             )
@@ -187,7 +215,11 @@ def main():
                     f"""Get-PhysicalDisk -SerialNumber {d["SerialNumber"]} | select MediaType"""
                 )
                 ssd_or_hdd = [i.strip() for i in out.split("\r\n") if i][2]
-                show_size = round(int(d['Size']) / 1000_000_000)
+                try:
+                    show_size = round(int(d["Size"]) / 1000_000_000)
+                except:
+                    print(f"[ERROR] cannot get disk size")
+                    show_size = -1
                 unit = "G"
                 if show_size >= 1000.0:
                     show_size = round(show_size / 1000)
@@ -223,13 +255,25 @@ def main():
         print("cpu, cores&threads, gpu, memory, ssd, hdd")
         if mode == "screenfetch":
             rc, out, err = Cmd("""screenfetch -n -N""")
-            cpu = re.search(r".*?CPU.*?:\s*(.*?)\s*\[", out).group(1)
-            gpu = re.search(r".*?GPU.*?:\s*(.*?)\n", out).group(1)
+            try:
+                cpu = re.search(r".*?CPU.*?:\s*(.*?)\s*\[", out).group(1)
+            except:
+                print(f"[ERROR] screenfetch error for CPU")
+                cpu = "screenfetch error"
+            try:
+                gpu = re.search(r".*?GPU.*?:\s*(.*?)\n", out).group(1)
+            except:
+                print(f"[ERROR] screenfetch error for GPU")
+                gpu = "screenfetch error"
 
         # CPU
         if mode == "fastfetch":
             rc, out, err = Cmd("""fastfetch -s cpu --format json""")
-            cpu = json.loads(out)[0]["result"]["cpu"]
+            try:
+                cpu = json.loads(out)[0]["result"]["cpu"]
+            except:
+                print(f"[ERROR] fastfetch error for CPU")
+                cpu = "fastfetch error"
 
         # CPU detail
         rc, out, err = Cmd("""egrep '^core id' /proc/cpuinfo | sort -u | wc -l""")
@@ -240,10 +284,18 @@ def main():
         # GPU
         if mode == "fastfetch":
             rc, out, err = Cmd("""fastfetch -s gpu --format json""")
-            gpus = json.loads(out)[0]["result"]
+            try:
+                gpus = json.loads(out)[0]["result"]
+            except:
+                print(f"[ERROR] cannot get gpus from fastfetch")
+                gpus = []
             gpu = ""
             for gpu_i in gpus:
-                gpu += gpu_i["name"] + "+"
+                try:
+                    gpu += gpu_i["name"] + "+"
+                except:
+                    print(f"[ERROR] gpu no name")
+                    gpu += "gpu no name"
             gpu = gpu[:-1]
 
         # Memory detail
@@ -258,7 +310,11 @@ def main():
             Type = match.group(1)
             if Type == "Unknown":
                 continue
-            Size = re.search(r"\s*?Size.*?:\s*(.*?)\s*GB\n", dimm).group(1)
+            try:
+                Size = re.search(r"\s*?Size.*?:\s*(.*?)\s*GB\n", dimm).group(1)
+            except:
+                print(f"[ERROR] cannot get memory size")
+                Size = -1
             memeorys.append({"Type": Type, "Size": int(Size)})
             memory += Size + "+"
         # print(memeorys)
@@ -267,21 +323,33 @@ def main():
 
         # Disk
         rc, out, err = Cmd("""sudo lshw -c disk -json""")
-        disks = json.loads(out)
-        # matches = re.findall(
-        #     r"(?m)\*-disk[\S\n\t\v ]*?logical name.*?(/\S*)[\S\n\t\v ]*?size.*?\((.*)GB\)",
-        #     out,
-        # )
+        try:
+            disks = json.loads(out)
+        except:
+            disks = []
+            print(f"[ERROR] cannot parse disk json")
         ssds = ""
         hdds = ""
         disks_arr = []
         for d in disks:
-            path = d["logicalname"]
+            try:
+                path = d["logicalname"]
+            except:
+                print(f"[INFO] this disk-like devise does not have path")
+                continue
             # check SSD or HDD
             rc, out, err = Cmd(f"""lsblk --raw -d -o rota {path} | tail -n 1""")
-            disk = {"Path": path, "Size": d["size"], "IsHDD": bool(int(out))}
+            try:
+                disk = {"Path": path, "Size": d["size"], "IsHDD": bool(int(out))}
+            except:
+                print(f"[ERROR] this disk-like devise cannot get size or check is HDD")
+                disk = {"Path": path, "Size": -1, "IsHDD": False}
             disks_arr.append(disk)
-            show_size = round(int(disk["Size"]) / 1000_000_000)
+            try:
+                show_size = round(int(disk["Size"]) / 1000_000_000)
+            except:
+                print(f"[ERROR] this disk-like devise cannot get size")
+                show_size = -1
             unit = "G"
             if show_size >= 1000.0:
                 show_size = round(show_size / 1000)
