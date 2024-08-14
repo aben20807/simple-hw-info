@@ -1,4 +1,5 @@
 import subprocess
+
 # import argparse
 import time
 from types import SimpleNamespace
@@ -99,7 +100,7 @@ def main():
             import sys
 
             sys.exit(1)
-        
+
         print("simple hw info:")
         print("cpu, cores&threads, gpu, memory, ssd, hdd")
         # CPU
@@ -186,10 +187,15 @@ def main():
                     f"""Get-PhysicalDisk -SerialNumber {d["SerialNumber"]} | select MediaType"""
                 )
                 ssd_or_hdd = [i.strip() for i in out.split("\r\n") if i][2]
+                show_size = round(int(d['Size']) / 1000_000_000)
+                unit = "G"
+                if show_size >= 1000.0:
+                    show_size = round(show_size / 1000)
+                    unit = "T"
                 if ssd_or_hdd == "SSD":
-                    ssds += f"{round(int(d['Size']) / 1000_000_000)}G+"
+                    ssds += f"{show_size}{unit}+"
                 else:
-                    hdds += f"{round(int(d['Size']) / 1000_000_000)}G+"
+                    hdds += f"{show_size}{unit}+"
 
         ssds = ssds[:-1] if ssds != "" else "-"
         hdds = hdds[:-1] if hdds != "" else "-"
@@ -240,7 +246,7 @@ def main():
                 gpu += gpu_i["name"] + "+"
             gpu = gpu[:-1]
 
-        # memory detail
+        # Memory detail
         rc, out, err = Cmd("""sudo dmidecode --type memory""")
         out = out.split("\n\n")
         memory = ""
@@ -259,26 +265,32 @@ def main():
         memory = memory[:-1] + "G"
         memory_type = " (" + memeorys[0]["Type"] + ")"
 
-        # disk
-        rc, out, err = Cmd("""sudo lshw -c disk""")
-        matches = re.findall(
-            r"(?m)\*-disk[\S\n\t\v ]*?logical name.*?(/\S*)[\S\n\t\v ]*?size.*?\((.*)GB\)",
-            out,
-        )
+        # Disk
+        rc, out, err = Cmd("""sudo lshw -c disk -json""")
+        disks = json.loads(out)
+        # matches = re.findall(
+        #     r"(?m)\*-disk[\S\n\t\v ]*?logical name.*?(/\S*)[\S\n\t\v ]*?size.*?\((.*)GB\)",
+        #     out,
+        # )
         ssds = ""
         hdds = ""
-        disks = []
-        for match in matches:
-            path = match[0]
+        disks_arr = []
+        for d in disks:
+            path = d["logicalname"]
             # check SSD or HDD
             rc, out, err = Cmd(f"""lsblk --raw -d -o rota {path} | tail -n 1""")
-            disk = {"Path": path, "Size": match[1], "IsHDD": bool(int(out))}
-            disks.append(disk)
+            disk = {"Path": path, "Size": d["size"], "IsHDD": bool(int(out))}
+            disks_arr.append(disk)
+            show_size = round(int(disk["Size"]) / 1000_000_000)
+            unit = "G"
+            if show_size >= 1000.0:
+                show_size = round(show_size / 1000)
+                unit = "T"
             if disk["IsHDD"]:
-                hdds += f"{int(disk['Size'])}G+"
+                hdds += f"{show_size}{unit}+"
             else:
-                ssds += f"{int(disk['Size'])}G+"
-        # print(disks)
+                ssds += f"{show_size}{unit}+"
+        # print(disks_arr)
         ssds = ssds[:-1] if ssds != "" else "-"
         hdds = hdds[:-1] if hdds != "" else "-"
 
